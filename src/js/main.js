@@ -1,33 +1,89 @@
 
-document.addEventListener("DOMContentLoaded", function(e) {
-    var textarea = document.getElementById('name');
-    сonsole.log(textarea);
-  });
+    let comments = [];
+    loadComments();
 
 
 
-// var messageBox = document.search.message;
+  document.getElementById('message').onclick  = function(){
+
+    let name = document.getElementById('name');
+    let textarea = document.getElementById('comment-text')
+    
+    let comment = {
+      name: name.value,
+      body: textarea.value,
+      time: Math.floor(Date.now() / 1000)
+    };     
+
+    name.value = '';
+    textarea.value = '';
+
+    comments.push(comment);
+    saveComments();
+    showComments();     
+  };
+
+  document.getElementById('comment-text').onkeydown=(function(event){
+    let comment = {      
+      body: this.value,
+      time: Math.floor(Date.now() / 1000)      
+    }; 
+    if((event.ctrlKey) && ((event.keyCode == 0xA)||(event.keyCode == 0xD)))
+    {
+      comments.push(comment);
+      saveComments();
+      showComments(); 
+      let commentField = document.getElementById('comment-wrapper');
+      let out = '';
+      comments.forEach(function(item){
+        
+       out +=`<div class='header'>
+        <div class='name'>Anonimus</div>
+        <div class='date'>${timeConverter(item.time)}</div>
+       </div> `
+       
+        out += `<div class='comment-inner'>${item.body}</div>`;
+      });
+      commentField.innerHTML = out;    
+    }
+  })
+
  
-// // обработчик ввода символа
-// function onkeypress(e){
-//     // получаем элемент printBlock
-//     var printBlock = document.getElementById("printBlock");
-//     // получаем введенный символ
-//     var val = String.fromCharCode(e.keyCode);
-//     // добавление символа
-//     printBlock.textContent += val;
-// }
- 
-// function onkeydown(e){
-//     if(e.keyCode===8){ // если нажат Backspace
+  function saveComments(){
+    localStorage.setItem('comments', JSON.stringify(comments));
+  }
+
+  function loadComments(){
+    if(localStorage.getItem('comments')) comments = JSON.parse(localStorage.getItem('comments'));
+    showComments();
+  }
+
+
+  function showComments(){
+    let commentField = document.getElementById('comment-wrapper');
+    let out = '';
+    comments.forEach(function(item){
+      
+     out +=`<div class='header'>
+      <div class='name'>${item.name}</div>
+      <div class='date'>${timeConverter(item.time)}</div>
+     </div> `
      
-//         // получаем элемент printBlock
-//         var printBlock = document.getElementById("printBlock"), 
-//             length = printBlock.textContent.length;
-//         // обрезаем строку по последнему символу
-//         printBlock.textContent = printBlock.textContent.substring(0, length-1);
-//     }
-// }
- 
-// messageBox.addEventListener("keypress", onkeypress);
-// messageBox.addEventListener("keydown", onkeydown);
+      out += `<div class='comment-inner'>${item.body}</div>`;
+    });
+    commentField.innerHTML = out;
+  }
+
+  function timeConverter(UNIX_timestamp){
+    var a = new Date(UNIX_timestamp * 1000);
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var year = a.getFullYear();
+    var month = months[a.getMonth()];
+    var date = a.getDate();
+    var hour = a.getHours();
+    var min = a.getMinutes();
+    var sec = a.getSeconds();
+    var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+    return time;
+  }
+
